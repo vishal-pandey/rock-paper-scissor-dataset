@@ -1,12 +1,15 @@
+import rock from './fnames/rock';
+import paper from './fnames/paper';
+import scissors from './fnames/scissors';
 
 window.onload = async ()=> {
 
 let classes = ["rock"]
 
 let datasetInfo = {
-    "rock": 725,
-    "paper": 711,
-    "scissors": 749
+    "rock": 5460,
+    "paper": 5357,
+    "scissors": 5638
 }
 
 let keyPointsMapping = {
@@ -52,7 +55,7 @@ let rockModel = new Array(datasetInfo['rock']).fill(0);
 
 let image = document.createElement("img")
 // image.setAttribute('src', "scissors"+"/"+"10"+'.png')
-image.setAttribute('src', "samples"+"/"+"rock1"+'.jpg')
+image.setAttribute('src', "samples"+"/"+"scissors"+'.jpg')
 console.log("Rock")
 
 image.onload = async ()=>{
@@ -61,7 +64,7 @@ image.onload = async ()=>{
         const estimationConfig = {flipHorizontal: false};
         const hands = await detector.estimateHands(image, estimationConfig);
         let data = []
-        console.log(hands[0].keypoints3D)
+        console.log(hands[0])
         hands[0].keypoints3D.forEach(element => {
             // let x = []
             data.push(element.x, element.y, element.z)
@@ -77,39 +80,47 @@ image.onload = async ()=>{
 
 var data = []
 
-async function generate(el, i = 0) {
+async function generate(el, flist, i = 0) {
 
     if(i > datasetInfo[el]){
-        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-        var dlAnchorElem = document.getElementById('downloadAnchorElem');
-        dlAnchorElem.setAttribute("href",     dataStr     );
-        dlAnchorElem.setAttribute("download", "scene.json");
-        dlAnchorElem.click();
+        // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+        // var dlAnchorElem = document.getElementById('downloadAnchorElem');
+        // dlAnchorElem.setAttribute("href",     dataStr     );
+        // dlAnchorElem.setAttribute("download", "scene.json");
+        // dlAnchorElem.click();
 
         console.log(data)
         return
     }
     rockModel[i] = document.createElement("img")
-    rockModel[i].setAttribute('src', el+'/'+i+'.png')
+    rockModel[i].setAttribute('src', el+'/'+flist[i])
     console.log(rockModel[i])
     setTimeout(async ()=>{
-        const estimationConfig = {flipHorizontal: false};
-        const hands = await detector.estimateHands(rockModel[i], estimationConfig);
-        
-        console.log(hands)
-        let x = []
-        hands[0]?.keypoints3D?.forEach(element => {
-            let xx = []
-            xx.push(element.x, element.y, element.z, keyPointsMapping[element.name])
-            x.push(xx)
-        })
-        data.push(x)
-        await generate(el, i+1);
+        try {
+            const estimationConfig = {flipHorizontal: false};
+            const hands = await detector.estimateHands(rockModel[i], estimationConfig);
+            
+            console.log(hands)
+            let x = []
+            hands[0]?.keypoints3D?.forEach(element => {
+                let xx = []
+                xx.push(element.x, element.y, element.z, keyPointsMapping[element.name])
+                x.push(xx)
+            })
+            data.push(x)
+        } catch (error) {
+            console.log(error)
+            setTimeout(async () => {
+                await generate(el,flist, i+1);
+            }, 20000);
+            return
+        }
+        await generate(el,flist, i+1);
     }, 40)
 
 }
 
-// await generate("scissors");
+// await generate("rock", rock);
 
 }
 
