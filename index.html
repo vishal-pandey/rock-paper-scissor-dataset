@@ -5,10 +5,27 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rock Paper Scissor Data Set Generation</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
     <script src="index_compiled.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- <img src="rock/1.png" class="my-image"> -->
-    <a id="downloadAnchorElem" style="display:none"></a>
+    <section class="title">
+        <h1>Rock Paper Scissor</h1>
+    </section>
+    <section class="status instruction">
+        <h2>Bring one hand in frame to start the game.</h2>
+    </section>
+    <section class="container">
+        <img src="assets/rock.gif" class="computer-hand">
+        <video autoplay="true"></video>
+    </section>
+    <section class="game">
+        <span class="computer-value"></span>
+        <span class="user-value"></span>
+    </section>
+    <section class="winner">
+        <h1></h1>
+    </section>
 </body>
 </html>

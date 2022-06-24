@@ -1,131 +1,194 @@
-import rock from './fnames/rock';
-import paper from './fnames/paper';
-import scissors from './fnames/scissors';
-
 window.onload = async ()=> {
 
-let classes = ["rock"]
+    var gameStarted = false;
 
-let datasetInfo = {
-    "rock": 5460,
-    "paper": 5357,
-    "scissors": 5638
-}
+    var user = 0;
+    var computer = 1;
+    var tie = 2
 
-let keyPointsMapping = {
-    'wrist': 0,
-    'thumb_cmc': 1,
-    'thumb_mcp': 2,
-    'thumb_ip': 3,
-    'thumb_tip': 4,
-    'index_finger_mcp': 5,
-    'index_finger_pip': 6,
-    'index_finger_dip': 7,
-    'index_finger_tip': 8,
-    'middle_finger_mcp': 9,
-    'middle_finger_pip': 10,
-    'middle_finger_dip': 11,
-    'middle_finger_tip': 12,
-    'ring_finger_mcp': 13,
-    'ring_finger_pip': 14,
-    'ring_finger_dip': 15,
-    'ring_finger_tip': 16,
-    'pinky_finger_mcp': 17,
-    'pinky_finger_pip': 18,
-    'pinky_finger_dip': 19,
-    'pinky_finger_tip': 20
-}
-
-const model = handPoseDetection.SupportedModels.MediaPipeHands;
-const detectorConfig = {
-  runtime: 'mediapipe',
-  solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands'
-                // or 'base/node_modules/@mediapipe/hands' in npm.
-};
-let detector = await handPoseDetection.createDetector(model, detectorConfig);
-
-
-let element = "rock"
-let rockModel = new Array(datasetInfo['rock']).fill(0);
-
-// for (let index = 0; index < datasetInfo[element]; index++) {
-//     await generage(element, index)
-// }
-
-
-let image = document.createElement("img")
-// image.setAttribute('src', "scissors"+"/"+"10"+'.png')
-image.setAttribute('src', "samples"+"/"+"scissors"+'.jpg')
-console.log("Rock")
-
-image.onload = async ()=>{
-    setTimeout(async()=> {
-        console.log(image)
-        const estimationConfig = {flipHorizontal: false};
-        const hands = await detector.estimateHands(image, estimationConfig);
-        let data = []
-        console.log(hands[0])
-        hands[0].keypoints3D.forEach(element => {
-            // let x = []
-            data.push(element.x, element.y, element.z)
-            // data.push(x)
-        })
-        // console.log(hands[0].keypoints3D);
-        console.log(data)
-    }, 100)
-    
-}
+    var rock = 0;
+    var paper = 1;
+    var scissors = 2;
 
 
 
-var data = []
-
-async function generate(el, flist, i = 0) {
-
-    if(i > datasetInfo[el]){
-        // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-        // var dlAnchorElem = document.getElementById('downloadAnchorElem');
-        // dlAnchorElem.setAttribute("href",     dataStr     );
-        // dlAnchorElem.setAttribute("download", "scene.json");
-        // dlAnchorElem.click();
-
-        console.log(data)
-        return
-    }
-    rockModel[i] = document.createElement("img")
-    rockModel[i].setAttribute('src', el+'/'+flist[i])
-    console.log(rockModel[i])
-    setTimeout(async ()=>{
-        try {
-            const estimationConfig = {flipHorizontal: false};
-            const hands = await detector.estimateHands(rockModel[i], estimationConfig);
-            
-            console.log(hands)
-            let x = []
-            hands[0]?.keypoints3D?.forEach(element => {
-                let xx = []
-                xx.push(element.x, element.y, element.z, keyPointsMapping[element.name])
-                x.push(xx)
-            })
-            data.push(x)
-        } catch (error) {
-            console.log(error)
-            setTimeout(async () => {
-                await generate(el,flist, i+1);
-            }, 20000);
-            return
+    var winningLogic = [
+        {
+            'u': rock,
+            'c': rock,
+            'win': tie
+        },
+        {
+            'u': paper,
+            'c': paper,
+            'win': tie
+        },
+        {
+            'u': scissors,
+            'c': scissors,
+            'win': tie
+        },
+        {
+            'u': rock,
+            'c': paper,
+            'win': computer
+        },
+        {
+            'u': rock,
+            'c': scissors,
+            'win': user
+        },
+        {
+            'u': paper,
+            'c': rock,
+            'win': user
+        },
+        {
+            'u': paper,
+            'c': scissors,
+            'win': computer
+        },
+        {
+            'u': scissors,
+            'c': rock,
+            'win': computer
+        },
+        {
+            'u': scissors,
+            'c': paper,
+            'win': user
         }
-        await generate(el,flist, i+1);
-    }, 40)
+    ]
 
-}
+    var userSelection = null;
 
-// await generate("rock", rock);
+    const model = handPoseDetection.SupportedModels.MediaPipeHands;
+    const detectorConfig = {
+    runtime: 'mediapipe',
+    solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands'
+                    // or 'base/node_modules/@mediapipe/hands' in npm.
+    };
+    let detector = await handPoseDetection.createDetector(model, detectorConfig);
+
+    let classes = ["ROCK", "PAPER", "SCISSORS"]
+    let classesAnim = ["assets/rock.gif", "assets/paper.gif", "assets/scissors.gif"]
+    let classesWin = ["You Won", "Computer Won", "Tie"]
+
+    navigator.getUserMedia({video: {}}, (stream)=>{
+        document.querySelector("video").srcObject = stream
+
+        let videoWidth = stream.getVideoTracks()[0].getSettings().width;
+        
+        document.querySelector(".user-value").style.width = videoWidth+10+"px"
+
+        var handCount = 0;
+        var handCountPrevious = 0;
+
+        
+
+        setInterval(async ()=>{
+
+            const estimationConfig = {flipHorizontal: false};
+            let video = document.querySelector("video");
+            const hands = await detector.estimateHands(video, estimationConfig);
+            
+            // console.log(hands[0]?.keypoints3D)
+            let data = []
+            hands[0]?.keypoints3D.forEach((el => {
+                data.push(el.x)
+                data.push(el.y)
+                data.push(el.z)
+            }))
+            
+            handCount = hands.length;
+
+            if(handCount == 1 && handCountPrevious == 0 && !gameStarted){
+                runGame()
+            }
+
+            handCountPrevious = handCount;
+
+
+
+            // console.log(data)
+            
+            if(data.length > 0){
+                let x = rpcmodel.predict(tf.tensor2d([data]))
+                let prediction = x.arraySync()[0]
+                if(gameStarted){
+                    userSelection = oneHotDecode(prediction)
+                    document.querySelector(".user-value").innerHTML = classes[userSelection]
+                }
+                // console.log(classes[oneHotDecode(prediction)])
+                // console.log(tf.tensor2d([data]))
+            }
+            
+            
+            
+        },200)
+    }, err=> console.log(err))
+
+    
+
+
+    function oneHotDecode(array) {
+        let index = 0
+        let maxVal = 0 
+
+        array.forEach((element, i) => {
+            if(element > maxVal) {
+                index = i
+                maxVal = element
+            }
+        });
+
+        return index;
+    }
+
+    function runGame() {
+
+        document.querySelector(".computer-value").innerHTML = "";
+        document.querySelector(".winner h1").innerHTML = "";
+        gameStarted = true
+        document.querySelector(".computer-hand").setAttribute("src", "assets/rps.gif")
+
+        setTimeout(()=>{
+            gameStarted = false;
+            let computerSelection = randomIndex(0, 2)
+            let computerVal = classes[computerSelection]
+            let computerAnim = classesAnim[computerSelection]
+
+            
+            document.querySelector(".computer-value").innerHTML = computerVal
+            document.querySelector(".computer-hand").setAttribute("src", computerAnim)
+            decideWinner(userSelection, computerSelection)
+            document.querySelector(".instruction h2").innerHTML = "To <b>restart</b> move out hands from frame and bring one back."
+        }, 1000)
+
+    }
+
+    function decideWinner(user, computer){
+        let winner = "";
+        winningLogic.forEach((el)=>{
+            if(el.u == user && el.c == computer){
+                winner = classesWin[el.win]
+            }
+        })
+        document.querySelector(".winner h1").innerHTML = winner;
+    }
+
+
+    function randomIndex(min, max) { // min and max included 
+        return Math.floor(Math.random() * (max - min + 1) + min)
+    }
+      
+
 
 }
 
 import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
-import '@tensorflow/tfjs-core';
+// import '@tensorflow/tfjs-core';
 // Register WebGL backend.
-import '@tensorflow/tfjs-backend-webgl';
+// import '@tensorflow/tfjs-backend-webgl';
 import '@mediapipe/hands';
+const rpcmodel = await tf.loadLayersModel('./model/rock-paper-scissor-model/model.json');
