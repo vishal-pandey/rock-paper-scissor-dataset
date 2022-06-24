@@ -77,16 +77,16 @@ window.onload = async ()=> {
     navigator.getUserMedia({video: {}}, (stream)=>{
         document.querySelector("video").srcObject = stream
 
-        let videoWidth = stream.getVideoTracks()[0].getSettings().width;
-        
-        document.querySelector(".user-value").style.width = videoWidth+10+"px"
-
         var handCount = 0;
         var handCountPrevious = 0;
 
-        
-
         setInterval(async ()=>{
+
+            let videoWidth = document.querySelector("video").clientWidth;
+            let computerHandWidth = document.querySelector(".computer-hand").clientWidth;
+            
+            document.querySelector(".user-value").style.width = videoWidth+10+"px";
+            document.querySelector(".computer-value").style.width = computerHandWidth+20+"px";
 
             const estimationConfig = {flipHorizontal: false};
             let video = document.querySelector("video");

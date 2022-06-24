@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 body{
     margin: 0;
     padding: 0;
@@ -8,7 +9,7 @@ body{
 
 *{
     box-sizing: border-box;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'Courier Prime', monospace;
     /* color: blueviolet; */
     color: rgb(76, 152, 0);
 }
@@ -19,6 +20,7 @@ body{
     justify-content: center;
     border-bottom: 10px solid grey;
     background-color: azure;
+    height: 70px;
 }
 .title h1{
     text-align: center;
@@ -34,6 +36,7 @@ video {
     -webkit-transform: scaleX(-1);
     transform: scaleX(-1);
     height: 500px;
+    max-height: 50vh;
     /* width: 400px; */
     border: 10px solid grey;
 }
@@ -56,6 +59,7 @@ video {
 
 .computer-hand{
     height: 500px;
+    max-height: 50vh;
     border: 10px solid grey;
     border-right: none;
 }
@@ -68,8 +72,8 @@ video {
     /* border: 10px solid grey; */
 }
 .computer-value, .user-value{
-    width: 500px;
     border: 10px solid grey;
+    background-color: white;
     border-top: none;
     height: 70px;
     font-size: 23px;
