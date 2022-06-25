@@ -1,17 +1,17 @@
-window.onload = async ()=> {
+window.onload = async () => {
 
+    // Game state
     var gameStarted = false;
 
-    var user = 0;
-    var computer = 1;
-    var tie = 2
+    var user = 0; // User Wins
+    var computer = 1; // Computer Wins
+    var tie = 2 // Tie between User and Computer
 
     var rock = 0;
     var paper = 1;
     var scissors = 2;
 
-
-
+    // All possible combination of state
     var winningLogic = [
         {
             'u': rock,
@@ -61,82 +61,80 @@ window.onload = async ()=> {
     ]
 
     var userSelection = null;
-
-    const model = handPoseDetection.SupportedModels.MediaPipeHands;
-    const detectorConfig = {
-    runtime: 'mediapipe',
-    solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands'
-                    // or 'base/node_modules/@mediapipe/hands' in npm.
-    };
-    let detector = await handPoseDetection.createDetector(model, detectorConfig);
+    var computerSelection = null;
 
     let classes = ["ROCK", "PAPER", "SCISSORS"]
     let classesAnim = ["assets/rock.gif", "assets/paper.gif", "assets/scissors.gif"]
     let classesWin = ["You Won", "Computer Won", "Tie"]
 
-    navigator.getUserMedia({video: {}}, (stream)=>{
-        document.querySelector("video").srcObject = stream
+    // Loading HTMLElements
+    var videoElement = document.querySelector("video") // User Hand in video
+    var computerHandElement = document.querySelector(".computer-hand") // Simulated Computer Hand
+
+    var userValueElement = document.querySelector(".user-value") // User's Selection from rock paper scissors
+    var computerValueElement = document.querySelector(".computer-value") // User's Selection from rock paper scissors
+
+    var instructionElement = document.querySelector(".instruction h2") // Instruction of how to play the game
+    var resultElement = document.querySelector(".winner h1") // To display the result -> who is the winner
+
+    // Loading Hand Pose Detection Model
+    const model = handPoseDetection.SupportedModels.MediaPipeHands;
+    const detectorConfig = {
+        runtime: 'mediapipe',
+        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands'
+        // or 'base/node_modules/@mediapipe/hands' in npm.
+    };
+    let detector = await handPoseDetection.createDetector(model, detectorConfig);
+
+    // Loading live webcam feed to video element
+    navigator.getUserMedia({ video: {} }, (stream) => {
+        videoElement.srcObject = stream
 
         var handCount = 0;
         var handCountPrevious = 0;
 
-        setInterval(async ()=>{
+        setInterval(async () => {
 
-            let videoWidth = document.querySelector("video").clientWidth;
-            let computerHandWidth = document.querySelector(".computer-hand").clientWidth;
-            
-            document.querySelector(".user-value").style.width = videoWidth+10+"px";
-            document.querySelector(".computer-value").style.width = computerHandWidth+20+"px";
+            setUIWidth()
 
-            const estimationConfig = {flipHorizontal: false};
-            let video = document.querySelector("video");
+            const estimationConfig = { flipHorizontal: false };
+            let video = videoElement;
             const hands = await detector.estimateHands(video, estimationConfig);
-            
-            // console.log(hands[0]?.keypoints3D)
+
+
             let data = []
             hands[0]?.keypoints3D.forEach((el => {
                 data.push(el.x)
                 data.push(el.y)
                 data.push(el.z)
             }))
-            
-            handCount = hands.length;
 
-            if(handCount == 1 && handCountPrevious == 0 && !gameStarted){
+            // Game start and restart Logic
+            handCount = hands.length;
+            if (handCount == 1 && handCountPrevious == 0 && !gameStarted) {
                 runGame()
             }
-
             handCountPrevious = handCount;
 
-
-
-            // console.log(data)
-            
-            if(data.length > 0){
+            // Predict Rock Paper Scissor from video pose
+            if (data.length > 0) {
                 let x = rpcmodel.predict(tf.tensor2d([data]))
                 let prediction = x.arraySync()[0]
-                if(gameStarted){
+                if (gameStarted) {
                     userSelection = oneHotDecode(prediction)
-                    document.querySelector(".user-value").innerHTML = classes[userSelection]
+                    userValueElement.innerHTML = classes[userSelection]
                 }
-                // console.log(classes[oneHotDecode(prediction)])
-                // console.log(tf.tensor2d([data]))
             }
-            
-            
-            
-        },200)
-    }, err=> console.log(err))
 
-    
-
+        }, 200)
+    }, err => console.log(err))
 
     function oneHotDecode(array) {
         let index = 0
-        let maxVal = 0 
+        let maxVal = 0
 
         array.forEach((element, i) => {
-            if(element > maxVal) {
+            if (element > maxVal) {
                 index = i
                 maxVal = element
             }
@@ -147,48 +145,52 @@ window.onload = async ()=> {
 
     function runGame() {
 
-        document.querySelector(".computer-value").innerHTML = "";
-        document.querySelector(".winner h1").innerHTML = "";
+        computerValueElement.innerHTML = "";
+        resultElement.innerHTML = "";
         gameStarted = true
-        document.querySelector(".computer-hand").setAttribute("src", "assets/rps.gif")
+        computerHandElement.setAttribute("src", "assets/rps.gif")
 
-        setTimeout(()=>{
+        setTimeout(() => {
             gameStarted = false;
-            let computerSelection = randomIndex(0, 2)
+            computerSelection = randomIndex(0, 2)
             let computerVal = classes[computerSelection]
             let computerAnim = classesAnim[computerSelection]
 
-            
-            document.querySelector(".computer-value").innerHTML = computerVal
-            document.querySelector(".computer-hand").setAttribute("src", computerAnim)
+
+            computerValueElement.innerHTML = computerVal
+            computerHandElement.setAttribute("src", computerAnim)
             decideWinner(userSelection, computerSelection)
-            document.querySelector(".instruction h2").innerHTML = "To <b>restart</b> move out hands from frame and bring one back."
+            instructionElement.innerHTML = "To <b>restart</b> move out hands from frame and bring one back."
         }, 1000)
 
     }
 
-    function decideWinner(user, computer){
+    // Run Winning Logic
+    function decideWinner(user, computer) {
         let winner = "";
-        winningLogic.forEach((el)=>{
-            if(el.u == user && el.c == computer){
+        winningLogic.forEach((el) => {
+            if (el.u == user && el.c == computer) {
                 winner = classesWin[el.win]
             }
         })
-        document.querySelector(".winner h1").innerHTML = winner;
+        resultElement.innerHTML = winner;
     }
 
-
+    // Random number generater between 0 and 2 to decide computer move
     function randomIndex(min, max) { // min and max included 
         return Math.floor(Math.random() * (max - min + 1) + min)
     }
-      
 
 
+    function setUIWidth() {
+        let videoWidth = videoElement.clientWidth;
+        let computerHandWidth = computerHandElement.clientWidth;
+
+        userValueElement.style.width = videoWidth + 10 + "px";
+        computerValueElement.style.width = computerHandWidth + 20 + "px";
+    }
 }
 
 import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
-// import '@tensorflow/tfjs-core';
-// Register WebGL backend.
-// import '@tensorflow/tfjs-backend-webgl';
 import '@mediapipe/hands';
 const rpcmodel = await tf.loadLayersModel('./model/rock-paper-scissor-model/model.json');
