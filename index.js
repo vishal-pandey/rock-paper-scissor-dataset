@@ -1,3 +1,6 @@
+import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
+import '@mediapipe/hands';
+
 window.onload = async () => {
 
     // Game state
@@ -77,57 +80,70 @@ window.onload = async () => {
     var instructionElement = document.querySelector(".instruction h2") // Instruction of how to play the game
     var resultElement = document.querySelector(".winner h1") // To display the result -> who is the winner
 
+    var loadingScreenElement = document.querySelector(".loading-screen")
+
+
     // Loading Hand Pose Detection Model
-    const model = handPoseDetection.SupportedModels.MediaPipeHands;
-    const detectorConfig = {
-        runtime: 'mediapipe',
-        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands'
-        // or 'base/node_modules/@mediapipe/hands' in npm.
-    };
-    let detector = await handPoseDetection.createDetector(model, detectorConfig);
+    try {
+        var model = handPoseDetection.SupportedModels.MediaPipeHands;
+        var detectorConfig = {
+            runtime: 'mediapipe',
+            solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands'
+        };
+        var rpcmodel = await tf.loadLayersModel('./model/rock-paper-scissor-model/model.json');
+        var detector = await handPoseDetection.createDetector(model, detectorConfig);
+        loadingScreenElement.style.display = "none";
+    } catch (error) {
+        console.log(error)
+    }
 
     // Loading live webcam feed to video element
-    navigator.getUserMedia({ video: {} }, (stream) => {
+    try {
+        let constraints = { audio: false, video: true }
+        var stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoElement.srcObject = stream
-
-        var handCount = 0;
-        var handCountPrevious = 0;
-
-        setInterval(async () => {
-
-            setUIWidth()
-
-            const estimationConfig = { flipHorizontal: false };
-            let video = videoElement;
-            const hands = await detector.estimateHands(video, estimationConfig);
+    } catch (error) {
+        console.log("Something error happened")
+    }
 
 
-            let data = []
-            hands[0]?.keypoints3D.forEach((el => {
-                data.push(el.x)
-                data.push(el.y)
-                data.push(el.z)
-            }))
+    var handCount = 0;
+    var handCountPrevious = 0;
 
-            // Game start and restart Logic
-            handCount = hands.length;
-            if (handCount == 1 && handCountPrevious == 0 && !gameStarted) {
-                runGame()
+    setInterval(async () => {
+
+        setUIWidth()
+
+        const estimationConfig = { flipHorizontal: false };
+        let video = videoElement;
+        const hands = await detector.estimateHands(video, estimationConfig);
+
+
+        let data = []
+        hands[0]?.keypoints3D.forEach((el => {
+            data.push(el.x)
+            data.push(el.y)
+            data.push(el.z)
+        }))
+
+        // Game start and restart Logic
+        handCount = hands.length;
+        if (handCount == 1 && handCountPrevious == 0 && !gameStarted) {
+            runGame()
+        }
+        handCountPrevious = handCount;
+
+        // Predict Rock Paper Scissor from video pose
+        if (data.length > 0) {
+            let x = rpcmodel.predict(tf.tensor2d([data]))
+            let prediction = x.arraySync()[0]
+            if (gameStarted) { 
+                userSelection = oneHotDecode(prediction)
+                userValueElement.innerHTML = classes[userSelection]
             }
-            handCountPrevious = handCount;
+        }
 
-            // Predict Rock Paper Scissor from video pose
-            if (data.length > 0) {
-                let x = rpcmodel.predict(tf.tensor2d([data]))
-                let prediction = x.arraySync()[0]
-                if (gameStarted) {
-                    userSelection = oneHotDecode(prediction)
-                    userValueElement.innerHTML = classes[userSelection]
-                }
-            }
-
-        }, 200)
-    }, err => console.log(err))
+    }, 200)
 
     function oneHotDecode(array) {
         let index = 0
@@ -191,6 +207,3 @@ window.onload = async () => {
     }
 }
 
-import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
-import '@mediapipe/hands';
-const rpcmodel = await tf.loadLayersModel('./model/rock-paper-scissor-model/model.json');
