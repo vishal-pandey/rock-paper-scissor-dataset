@@ -44,6 +44,7 @@ body{
     border-bottom: 10px solid rgb(150, 150, 150);
     background-color: azure;
     height: 70px;
+    position: relative;
 }
 
 .title h1{
@@ -53,6 +54,16 @@ body{
     font-weight: bolder;
     /* border: 1px solid black; */
     /* color: red; */
+}
+
+.myinfo{
+    position: absolute;
+    right: 10px;
+    font-size: 30px;
+    cursor: pointer;
+}
+.myinfo a{
+    text-decoration: none;
 }
 
 video {
