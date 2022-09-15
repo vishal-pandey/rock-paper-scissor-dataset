@@ -14,6 +14,10 @@ window.onload = async () => {
     var paper = 1;
     var scissors = 2;
 
+    // Score
+    var score_computer = 0;
+    var score_user = 0;
+
     // All possible combination of state
     var winningLogic = [
         {
@@ -81,6 +85,9 @@ window.onload = async () => {
     var resultElement = document.querySelector(".winner h1") // To display the result -> who is the winner
 
     var loadingScreenElement = document.querySelector(".loading-screen")
+
+    var scoreComputerElement = document.querySelector(".score.computer span");
+    var scoreUserElement = document.querySelector(".score.user span");
 
 
     // Loading Hand Pose Detection Model
@@ -187,9 +194,30 @@ window.onload = async () => {
         winningLogic.forEach((el) => {
             if (el.u == user && el.c == computer) {
                 winner = classesWin[el.win]
+                if (el.win == 0) {
+                    score_user += 1;
+                }
+                if (el.win == 1) {
+                    score_computer += 1;
+                }
             }
         })
         resultElement.innerHTML = winner;
+        console.log(scoreComputerElement, "This too")
+        scoreComputerElement.innerHTML = score_computer;
+        scoreUserElement.innerHTML = score_user;
+        if(score_computer > score_user) {
+            scoreComputerElement.parentElement.id = "gamewinner"
+            scoreUserElement.parentElement.id = "gamelosser"
+        }
+        if(score_computer < score_user) {
+            scoreComputerElement.parentElement.id = "gamelosser"
+            scoreUserElement.parentElement.id = "gamewinner"
+        }
+        if(score_computer == score_user) {
+            scoreComputerElement.parentElement.id = ""
+            scoreUserElement.parentElement.id = ""
+        }
     }
 
     // Random number generater between 0 and 2 to decide computer move

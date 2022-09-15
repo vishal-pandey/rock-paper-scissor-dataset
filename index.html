@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rock Paper Scissor Data Set Generation</title>
+    <title>Rock Paper Scissor Game</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
     <script src="index_compiled.js"></script>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.lr-in-prod.com/LogRocket.min.js" crossorigin="anonymous"></script>
-    <script>window.LogRocket && window.LogRocket.init('zlm0pg/rock-paper-scissor');</script>
+    <!-- <script src="https://cdn.lr-in-prod.com/LogRocket.min.js" crossorigin="anonymous"></script> -->
+    <!-- <script>window.LogRocket && window.LogRocket.init('zlm0pg/rock-paper-scissor');</script> -->
 </head>
 <body>
     <section class="loading-screen">
@@ -38,7 +38,13 @@
         <span class="user-value"></span>
     </section>
     <section class="winner">
+        <section class="score computer">
+            <b>Computer Score : &nbsp;</b> <span>0</span>
+        </section>
         <h1></h1>
+        <section class="score user">
+            <b>Your Score : &nbsp;</b> <span>0</span>
+        </section>
     </section>
 </body>
 </html>
