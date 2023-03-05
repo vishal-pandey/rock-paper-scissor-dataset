@@ -165,3 +165,61 @@ video {
 #gamelosser{
     background-color: rgba(200, 80, 80, 0.3);
 }
+
+@media screen and (max-width: 680px) {
+    .title {
+        width: 100%;
+    }
+    .title h1{
+        color: red;
+        font-size: 20px;
+    }
+    .status h2{
+        font-size: 16px;
+        padding-left: 10px;
+        padding-right: 10px;
+        text-align: center;
+    }
+    .container{
+        max-width: 100%;
+        flex-direction: column;
+    }
+    video, .computer-hand{
+        max-height: 30vh;
+        width: 90vw;
+    }
+    .computer-hand {
+        width: 90vw;
+        border-right: 10px solid rgb(150, 150, 150);;
+    }
+    
+    .computer-value, .user-value{
+        margin-top: 10px;
+        border: 10px solid rgb(150, 150, 150);
+        height: 50px;
+        font-size: 15px;
+    }
+    .score{
+        font-size: 15px;
+        width: 500px;
+        margin: 0px;
+        height: 50px;
+    }
+    .score span {
+        font-size: 16px;
+    }
+    .winner{
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+    .winner h1{
+        margin: 0;
+        height: 50px;
+        font-size: 16px;
+        line-height: 16px;
+        line-height: 30px;
+    }
+    .myinfo{
+        font-size: 16px;
+    }
+}
