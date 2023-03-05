@@ -112,7 +112,7 @@ window.onload = async () => {
         videoElement.srcObject = stream
         await videoElement.play();
     } catch (error) {
-        console.log("Something error happened")
+        console.log("Something error happened", error)
     }
 
 
