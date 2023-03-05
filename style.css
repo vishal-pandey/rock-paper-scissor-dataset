@@ -171,7 +171,7 @@ video {
         width: 100%;
     }
     .title h1{
-        color: red;
+        /* color: red; */
         font-size: 20px;
     }
     .status h2{

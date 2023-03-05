@@ -99,6 +99,7 @@ window.onload = async () => {
         };
         var rpcmodel = await tf.loadLayersModel('./model/rock-paper-scissor-model/model.json');
         var detector = await handPoseDetection.createDetector(model, detectorConfig);
+        await detector.initialize()
         loadingScreenElement.style.display = "none";
     } catch (error) {
         console.log(error)
@@ -109,6 +110,7 @@ window.onload = async () => {
         let constraints = { audio: false, video: true }
         var stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoElement.srcObject = stream
+        await videoElement.play();
     } catch (error) {
         console.log("Something error happened")
     }
